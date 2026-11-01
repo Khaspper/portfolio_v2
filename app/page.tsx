@@ -6,6 +6,7 @@ import { Canvas } from "@react-three/fiber";
 import { DirectionalLight, DirectionalLightHelper } from "three";
 import { useControls } from "leva";
 import Hallway from "./rooms/hallway";
+import Bathroom from "./rooms/bathroom";
 
 function Scene() {
   const directionLightRef = useRef<DirectionalLight>(null!);
@@ -47,6 +48,7 @@ function Scene() {
       />
       <ambientLight intensity={0.1} />
       <Hallway />
+      <Bathroom />
     </>
   );
 }

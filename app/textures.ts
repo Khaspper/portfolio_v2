@@ -171,11 +171,88 @@ function drawParquet(g: CanvasRenderingContext2D, w: number, h: number) {
   speckle(g, w, h, r, 6000, 0.12);
 }
 
+// Faded floral wallpaper (tiles seamlessly)
+function drawWallpaper(g: CanvasRenderingContext2D, w: number, h: number) {
+  const r = seededRandom(7);
+  g.fillStyle = "#8a847a";
+  g.fillRect(0, 0, w, h);
+  mottle(g, w, h, r, 260, "70,62,52", "160,152,140", 0.18);
+
+  function flower(x: number, y: number, size: number, rot: number) {
+    g.save();
+    g.translate(x, y);
+    g.rotate(rot);
+    // stem
+    g.strokeStyle = "rgba(48,44,38,0.6)";
+    g.lineWidth = 1.8;
+    g.beginPath();
+    g.moveTo(0, 0);
+    g.bezierCurveTo(size * 0.4, size * 0.9, -size * 0.5, size * 1.4, size * 0.1, size * 2.1);
+    g.stroke();
+    // two leaves
+    g.fillStyle = "rgba(52,48,42,0.45)";
+    for (let k = 0; k < 2; k++) {
+      g.save();
+      g.translate(size * (k ? -0.25 : 0.3), size * (k ? 1.3 : 0.8));
+      g.rotate(k ? -0.9 : 0.8);
+      g.beginPath();
+      g.ellipse(0, 0, size * 0.45, size * 0.16, 0, 0, Math.PI * 2);
+      g.fill();
+      g.restore();
+    }
+    // five petals
+    for (let p = 0; p < 5; p++) {
+      g.save();
+      g.rotate((p * Math.PI * 2) / 5);
+      g.beginPath();
+      g.ellipse(0, -size * 0.32, size * 0.17, size * 0.3, 0, 0, Math.PI * 2);
+      g.fillStyle = "rgba(58,52,46,0.5)";
+      g.fill();
+      g.restore();
+    }
+    // middle
+    g.beginPath();
+    g.arc(0, 0, size * 0.11, 0, Math.PI * 2);
+    g.fillStyle = "rgba(45,40,34,0.45)";
+    g.fill();
+    g.restore();
+  }
+
+  // a big and a small flower in every cell, every other row shifted
+  const step = 128;
+  for (let yy = -1; yy <= 4; yy++) {
+    for (let xx = -1; xx <= 4; xx++) {
+      const ox = xx * step + (yy % 2 ? step / 2 : 0);
+      const oy = yy * step;
+      flower(ox + 30, oy + 30, 26, 0.3);
+      flower(ox + 92, oy + 84, 16, -0.7);
+    }
+  }
+
+  // seams between wallpaper strips
+  g.fillStyle = "rgba(40,36,30,0.22)";
+  g.fillRect(0, 0, 2, h);
+  g.fillRect(256, 0, 2, h);
+
+  // water stains dripping down from the top
+  for (let i = 0; i < 7; i++) {
+    const x = r() * w;
+    const len = 120 + r() * 300;
+    const grd = g.createLinearGradient(0, 0, 0, len);
+    grd.addColorStop(0, "rgba(70,52,34,0.22)");
+    grd.addColorStop(1, "rgba(70,52,34,0)");
+    g.fillStyle = grd;
+    g.fillRect(x, 0, 6 + r() * 18, len);
+  }
+  speckle(g, w, h, r, 9000, 0.1);
+}
+
 // Made once on first use, then shared by everything that uses them
 let cached: {
   door: CanvasTexture;
   frame: CanvasTexture;
   parquet: CanvasTexture;
+  wallpaper: CanvasTexture;
 } | null = null;
 export function getTextures() {
   if (!cached) {
@@ -183,6 +260,7 @@ export function getTextures() {
       door: canvasTexture(256, 512, drawDoor),
       frame: canvasTexture(256, 256, drawFrameWood),
       parquet: canvasTexture(512, 512, drawParquet),
+      wallpaper: canvasTexture(512, 512, drawWallpaper),
     };
   }
   return cached;
@@ -194,6 +272,16 @@ export function makeParquetFloor(width: number, depth: number) {
   texture.wrapS = RepeatWrapping;
   texture.wrapT = RepeatWrapping;
   texture.repeat.set(width, depth);
+  texture.needsUpdate = true;
+  return texture;
+}
+
+// The wallpaper repeated across a wall of this size (one copy per 1.2 units)
+export function makeWallpaper(length: number, height: number) {
+  const texture = getTextures().wallpaper.clone();
+  texture.wrapS = RepeatWrapping;
+  texture.wrapT = RepeatWrapping;
+  texture.repeat.set(length / 1.2, height / 1.2);
   texture.needsUpdate = true;
   return texture;
 }

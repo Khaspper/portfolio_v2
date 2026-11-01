@@ -4,7 +4,7 @@ import { ComponentProps, Fragment, useMemo } from "react";
 import { KeyboardControls, PointerLockControls } from "@react-three/drei";
 
 import { Canvas } from "@react-three/fiber";
-import Rooms from "./rooms";
+import Rooms, { BEDROOM_ROOMS } from "./rooms";
 import Player from "./Player";
 import RoomWalls, { Wall } from "./roomWalls";
 import Door from "./door";
@@ -93,10 +93,21 @@ function Scene() {
           <Rooms room={room} />
           <RoomWalls room={room} skip={skip} />
           {extraWalls.map((wall, i) => (
-            <Wall key={i} {...wall} />
+            <Wall key={i} {...wall} plain={BEDROOM_ROOMS.includes(room)} />
           ))}
           {doors.map((door, i) => (
-            <Door key={i} {...door} />
+            <Door
+              key={i}
+              {...door}
+              // bedroom entry door faces the hallway, so only its bedroom side stays plain
+              plainWall={
+                room === "bedroomEntry"
+                  ? "inside"
+                  : BEDROOM_ROOMS.includes(room)
+                    ? "both"
+                    : undefined
+              }
+            />
           ))}
         </Fragment>
       ))}

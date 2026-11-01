@@ -1,4 +1,6 @@
-import { ROOMS } from "./rooms";
+import { useMemo } from "react";
+import { BEDROOM_ROOMS, ROOMS } from "./rooms";
+import { makeWallpaper } from "./textures";
 
 export const WALL_HEIGHT = 3;
 const WALL_THICKNESS = 0.2;
@@ -48,10 +50,12 @@ export default function RoomWalls({
     <>
       {WALLS.filter(({ side }) => !skip.includes(side)).map(
         ({ side, pos, size }) => (
-          <mesh key={side} userData={{ solid: true }} position={[pos[0], WALL_HEIGHT / 2, pos[1]]}>
-            <boxGeometry args={[size[0], WALL_HEIGHT, size[1]]} />
-            <meshStandardMaterial color="lightgray" />
-          </mesh>
+          <Wall
+            key={side}
+            pos={pos}
+            size={size}
+            plain={BEDROOM_ROOMS.includes(room)}
+          />
         ),
       )}
     </>
@@ -62,14 +66,28 @@ export default function RoomWalls({
 export function Wall({
   pos,
   size,
+  plain = false,
 }: {
   pos: [number, number];
   size: [number, number];
+  // plain gray instead of wallpaper (used for the bedroom)
+  plain?: boolean;
 }) {
+  // the long side of the wall, so the wallpaper repeats along it
+  const length = Math.max(size[0], size[1]);
+  const wallpaper = useMemo(
+    () => (plain ? null : makeWallpaper(length, WALL_HEIGHT)),
+    [plain, length],
+  );
+
   return (
     <mesh userData={{ solid: true }} position={[pos[0], WALL_HEIGHT / 2, pos[1]]}>
       <boxGeometry args={[size[0], WALL_HEIGHT, size[1]]} />
-      <meshStandardMaterial color="lightgray" />
+      {wallpaper ? (
+        <meshStandardMaterial map={wallpaper} roughness={0.95} />
+      ) : (
+        <meshStandardMaterial color="lightgray" />
+      )}
     </mesh>
   );
 }

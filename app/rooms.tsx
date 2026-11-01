@@ -73,8 +73,8 @@ export const ROOMS = {
 
 type RoomName = keyof typeof ROOMS;
 
-// Rooms that keep their plain colored floor
-const KEEP_PLAIN_FLOOR: RoomName[] = ["bedroom", "bedroomEntry", "walkInCloset"];
+// The bedroom and its parts: these keep their plain floors and walls
+export const BEDROOM_ROOMS: RoomName[] = ["bedroom", "bedroomEntry", "walkInCloset"];
 
 export default function Rooms({ room }: { room: RoomName }) {
   const ref = useRef<Mesh>(null!);
@@ -113,7 +113,7 @@ export default function Rooms({ room }: { room: RoomName }) {
   // parquet everywhere except the bedroom rooms, which stay as they are
   const floorTexture = useMemo(
     () =>
-      KEEP_PLAIN_FLOOR.includes(room)
+      BEDROOM_ROOMS.includes(room)
         ? null
         : makeParquetFloor(roomWidth, roomHeight),
     [room, roomWidth, roomHeight],

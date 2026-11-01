@@ -1,8 +1,8 @@
 import { useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Group, MathUtils, Mesh, Raycaster, Vector2 } from "three";
 import { WALL_HEIGHT } from "./roomWalls";
-import { getTextures } from "./textures";
+import { getTextures, makeWallpaper } from "./textures";
 
 const DOOR_HEIGHT = 2.1;
 const DOOR_THICKNESS = 0.05;
@@ -21,17 +21,29 @@ export default function Door({
   width,
   rotation,
   swing = 1,
+  plainWall,
 }: {
   hinge: [number, number];
   width: number;
   rotation: number;
   swing?: 1 | -1;
+  // plain gray wall above the door instead of wallpaper (used for the bedroom):
+  // "both" sides, or only the "inside" (the side the door swings into)
+  plainWall?: "both" | "inside";
 }) {
   const hingeRef = useRef<Group>(null!);
   const doorRef = useRef<Mesh>(null!);
   const isOpen = useRef(false);
   const camera = useThree((state) => state.camera);
   const textures = getTextures();
+  const lintelWallpaper = useMemo(
+    () =>
+      plainWall === "both" ? null : makeWallpaper(width, WALL_HEIGHT - DOOR_HEIGHT),
+    [plainWall, width],
+  );
+  // A box has 6 faces: 0 +x, 1 -x, 2 top, 3 bottom, 4 front (+z), 5 back (-z).
+  // swing 1 opens toward the back face, swing -1 toward the front face
+  const insideFace = swing === 1 ? 5 : 4;
 
   useEffect(() => {
     const onClick = () => {
@@ -98,7 +110,18 @@ export default function Door({
       <group position={[hinge[0], 0, hinge[1]]} rotation={[0, rotation, 0]}>
         <mesh userData={{ solid: true }} position={[width / 2, (DOOR_HEIGHT + WALL_HEIGHT) / 2, 0]}>
           <boxGeometry args={[width, WALL_HEIGHT - DOOR_HEIGHT, 0.2]} />
-          <meshStandardMaterial color="lightgray" />
+          {[0, 1, 2, 3, 4, 5].map((face) =>
+            !lintelWallpaper || (plainWall === "inside" && face === insideFace) ? (
+              <meshStandardMaterial key={face} attach={`material-${face}`} color="lightgray" />
+            ) : (
+              <meshStandardMaterial
+                key={face}
+                attach={`material-${face}`}
+                map={lintelWallpaper}
+                roughness={0.95}
+              />
+            ),
+          )}
         </mesh>
       </group>
     </>

@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef } from "react";
-import { OrbitControls, useHelper } from "@react-three/drei";
+import { PointerLockControls, useHelper } from "@react-three/drei";
+
 import { Canvas } from "@react-three/fiber";
 import { DirectionalLight, DirectionalLightHelper } from "three";
 import { useControls } from "leva";
@@ -37,7 +38,7 @@ function Scene() {
 
   return (
     <>
-      <OrbitControls />
+      <PointerLockControls />
       <directionalLight
         ref={directionLightRef}
         position={[lightX, lightY, lightZ]}
@@ -57,7 +58,7 @@ function Scene() {
 
 export default function Home() {
   return (
-    <Canvas camera={{ position: [0, 5, 0], fov: 75 }}>
+    <Canvas camera={{ position: [0, 1.7, 8], fov: 75 }}>
       <Scene />
     </Canvas>
   );

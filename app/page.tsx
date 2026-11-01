@@ -1,12 +1,18 @@
 "use client";
 
-import { useRef } from "react";
-import { PointerLockControls, useHelper } from "@react-three/drei";
+import { useMemo, useRef } from "react";
+import {
+  KeyboardControls,
+  PointerLockControls,
+  useHelper,
+} from "@react-three/drei";
 
 import { Canvas } from "@react-three/fiber";
 import { DirectionalLight, DirectionalLightHelper } from "three";
 import { useControls } from "leva";
 import Rooms from "./rooms";
+import Player from "./Player";
+import { Controls } from "./types";
 function Scene() {
   const directionLightRef = useRef<DirectionalLight>(null!);
 
@@ -46,6 +52,7 @@ function Scene() {
         color={lightColor}
       />
       <ambientLight intensity={0.1} />
+      <Player />
       <Rooms room="hallway" />
       <Rooms room="bathroom" />
       <Rooms room="closet" />
@@ -57,9 +64,41 @@ function Scene() {
 }
 
 export default function Home() {
+  const map = useMemo(
+    () => [
+      {
+        name: Controls.FORWARDS,
+        keys: ["ArrowUp", "KeyW"],
+      },
+      {
+        name: Controls.BACKWARDS,
+        keys: ["ArrowDown", "KeyS"],
+      },
+      {
+        name: Controls.LEFT,
+        keys: ["ArrowLeft", "KeyA"],
+      },
+      {
+        name: Controls.RIGHT,
+        keys: ["ArrowRight", "KeyD"],
+      },
+      {
+        name: Controls.UP,
+        keys: ["Space"],
+      },
+      {
+        name: Controls.DOWN,
+        keys: ["ShiftLeft"],
+      },
+    ],
+    [],
+  );
+
   return (
-    <Canvas camera={{ position: [0, 1.7, 8], fov: 75 }}>
-      <Scene />
-    </Canvas>
+    <KeyboardControls map={map}>
+      <Canvas camera={{ position: [0, 1.7, 8], fov: 75 }}>
+        <Scene />
+      </Canvas>
+    </KeyboardControls>
   );
 }

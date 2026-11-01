@@ -59,9 +59,15 @@ function Scene() {
       <Rooms room="bathroom" />
       <RoomWalls room="bathroom" />
       <Rooms room="closet" />
+      <RoomWalls room="closet" />
       <Rooms room="bedroom" />
+      <RoomWalls room="bedroom" />
       <Rooms room="livingroom" />
+      {/* no right wall: the living room opens straight into the kitchen */}
+      <RoomWalls room="livingroom" skip={["right"]} />
       <Rooms room="kitchen" />
+      {/* no left wall: the kitchen opens straight into the living room */}
+      <RoomWalls room="kitchen" skip={["left"]} />
     </>
   );
 }

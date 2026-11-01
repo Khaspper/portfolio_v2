@@ -1,6 +1,6 @@
 import { ROOMS } from "./rooms";
 
-const WALL_HEIGHT = 3;
+export const WALL_HEIGHT = 3;
 const WALL_THICKNESS = 0.2;
 
 type RoomName = keyof typeof ROOMS;

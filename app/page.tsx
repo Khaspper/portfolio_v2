@@ -68,9 +68,11 @@ function Scene() {
       <Rooms room="walkInCloset" />
       <RoomWalls room="walkInCloset" skip={["far"]} />
       <Rooms room="livingroom" />
-      <RoomWalls room="livingroom" skip={["right"]} />
+      <RoomWalls room="livingroom" skip={["left", "far"]} />
+      <Wall pos={[10.5, -4]} size={[4, 0.2]} />
       <Rooms room="kitchen" />
-      <RoomWalls room="kitchen" skip={["left"]} />
+      <RoomWalls room="kitchen" skip={["left", "near"]} />
+      <Wall pos={[2.5, -9]} size={[0.2, 2]} />
     </>
   );
 }

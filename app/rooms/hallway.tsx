@@ -5,41 +5,42 @@ import { Mesh } from "three";
 export default function Hallway() {
   const ref = useRef<Mesh>(null!);
 
-  const { posX, posY, posZ, width, height } = useControls({
-    posX: {
-      value: 0,
-      min: -10,
-      max: 10,
-    },
-    posY: {
-      value: 0,
-      min: -10,
-      max: 10,
-    },
-    posZ: {
-      value: 0,
-      min: -10,
-      max: 10,
-    },
-    width: {
-      value: 10,
-      min: 0,
-      max: 100,
-    },
-    height: {
-      value: 10,
-      min: 0,
-      max: 100,
-    },
-  });
+  const { hallwayPosX, hallwayPosY, hallwayPosZ, hallwayWidth, hallwayHeight } =
+    useControls({
+      hallwayPosX: {
+        value: 0,
+        min: -10,
+        max: 10,
+      },
+      hallwayPosY: {
+        value: 0,
+        min: -10,
+        max: 10,
+      },
+      hallwayPosZ: {
+        value: 0,
+        min: -10,
+        max: 10,
+      },
+      hallwayWidth: {
+        value: 10,
+        min: 0,
+        max: 100,
+      },
+      hallwayHeight: {
+        value: 50,
+        min: 0,
+        max: 100,
+      },
+    });
 
   return (
     <mesh
-      position={[posX, posY, posZ]}
+      position={[hallwayPosX, hallwayPosY, hallwayPosZ]}
       ref={ref}
       rotation={[Math.PI / 2, 0, 0]}
     >
-      <planeGeometry args={[width, height]} />
+      <planeGeometry args={[hallwayWidth, hallwayHeight]} />
       <meshStandardMaterial color={"orange"} side={2} />
     </mesh>
   );

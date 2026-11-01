@@ -55,7 +55,8 @@ function Scene() {
       <ambientLight intensity={0.1} />
       <Player />
       <Rooms room="hallway" />
-      <RoomWalls room="hallway" />
+      <RoomWalls room="hallway" skip={["right"]} />
+      <Wall pos={[2.5, 14.5]} size={[0.2, 21]} />
       <Rooms room="bathroom" />
       <RoomWalls room="bathroom" />
       <Rooms room="closet" />

@@ -18,7 +18,7 @@ export default function Hallway() {
         max: 10,
       },
       hallwayPosZ: {
-        value: 0,
+        value: 8.5,
         min: -10,
         max: 10,
       },
@@ -28,7 +28,7 @@ export default function Hallway() {
         max: 100,
       },
       hallwayHeight: {
-        value: 50,
+        value: 33,
         min: 0,
         max: 100,
       },

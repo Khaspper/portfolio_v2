@@ -8,15 +8,15 @@ const BULB_HEIGHT = WALL_HEIGHT - 0.5; // how far down the bulb hangs
 const CORD_LENGTH = WALL_HEIGHT - BULB_HEIGHT;
 
 const HALLWAY_BULBS: [number, number][] = [
-  [0, 0],
-  [0, 16],
+  [-0.85, -3],
+  [-0.85, 6],
 ];
 const ROOM_BULBS: [number, number][] = [
-  [-4, 21], // bathroom
+  [-4, 10], // bathroom
   [-7, 4], // bedroom
-  [5, 12], // closet
-  [7.5, 0], // living room
-  [5.5, -7], // kitchen
+  [3.3, 7.5], // closet
+  [5.8, 0], // living room
+  [3.8, -7], // kitchen
 ];
 
 export default function Lights() {

@@ -1,21 +1,22 @@
 import { useControls } from "leva";
 import { Grid } from "@react-three/drei";
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import { Mesh } from "three";
+import { makeParquetFloor } from "./textures";
 
 export const ROOMS = {
   hallway: {
-    posX: { value: 0, min: -10, max: 10 },
+    posX: { value: -0.85, min: -10, max: 10 },
     posY: { value: 0, min: -10, max: 10 },
-    posZ: { value: 8.5, min: -10, max: 10 },
-    width: { value: 5, min: 0, max: 100 },
-    height: { value: 33, min: 0, max: 100 },
+    posZ: { value: 1.5, min: -10, max: 10 },
+    width: { value: 3.3, min: 0, max: 100 },
+    height: { value: 19, min: 0, max: 100 },
     color: "orange",
   },
   bathroom: {
     posX: { value: -4, min: -10, max: 20 },
     posY: { value: 0, min: -10, max: 20 },
-    posZ: { value: 21, min: -10, max: 40 },
+    posZ: { value: 10, min: -10, max: 40 },
     width: { value: 3, min: 0, max: 100 },
     height: { value: 5, min: 0, max: 100 },
     color: "green",
@@ -45,15 +46,15 @@ export const ROOMS = {
     color: "indigo",
   },
   closet: {
-    posX: { value: 5, min: -20, max: 20 },
+    posX: { value: 3.3, min: -20, max: 20 },
     posY: { value: 0, min: -10, max: 20 },
-    posZ: { value: 12, min: -10, max: 20 },
+    posZ: { value: 7.5, min: -10, max: 20 },
     width: { value: 5, min: 0, max: 100 },
     height: { value: 3, min: 0, max: 100 },
     color: "blue",
   },
   livingroom: {
-    posX: { value: 7.5, min: -10, max: 20 },
+    posX: { value: 5.8, min: -10, max: 20 },
     posY: { value: 0, min: -10, max: 20 },
     posZ: { value: 0, min: -10, max: 20 },
     width: { value: 10, min: 0, max: 100 },
@@ -61,7 +62,7 @@ export const ROOMS = {
     color: "yellow",
   },
   kitchen: {
-    posX: { value: 5.5, min: -10, max: 50 },
+    posX: { value: 3.8, min: -10, max: 50 },
     posY: { value: 0, min: -10, max: 20 },
     posZ: { value: -7, min: -20, max: 20 },
     width: { value: 6, min: 0, max: 100 },
@@ -71,6 +72,9 @@ export const ROOMS = {
 };
 
 type RoomName = keyof typeof ROOMS;
+
+// Rooms that keep their plain colored floor
+const KEEP_PLAIN_FLOOR: RoomName[] = ["bedroom", "bedroomEntry", "walkInCloset"];
 
 export default function Rooms({ room }: { room: RoomName }) {
   const ref = useRef<Mesh>(null!);
@@ -106,6 +110,15 @@ export default function Rooms({ room }: { room: RoomName }) {
     },
   );
 
+  // parquet everywhere except the bedroom rooms, which stay as they are
+  const floorTexture = useMemo(
+    () =>
+      KEEP_PLAIN_FLOOR.includes(room)
+        ? null
+        : makeParquetFloor(roomWidth, roomHeight),
+    [room, roomWidth, roomHeight],
+  );
+
   return (
     <>
       <mesh
@@ -114,7 +127,11 @@ export default function Rooms({ room }: { room: RoomName }) {
         rotation={[Math.PI / 2, 0, 0]}
       >
         <planeGeometry args={[roomWidth, roomHeight]} />
-        <meshStandardMaterial color={ROOMS[room].color} side={2} />
+        {floorTexture ? (
+          <meshStandardMaterial map={floorTexture} roughness={0.75} side={2} />
+        ) : (
+          <meshStandardMaterial color={ROOMS[room].color} side={2} />
+        )}
       </mesh>
       <Grid
         position={[roomPosX, roomPosY + 0.01, roomPosZ]}

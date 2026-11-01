@@ -2,7 +2,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
 import { Group, MathUtils, Mesh, Raycaster, Vector2 } from "three";
 import { WALL_HEIGHT } from "./roomWalls";
-import { getDoorTextures } from "./doorTextures";
+import { getTextures } from "./textures";
 
 const DOOR_HEIGHT = 2.1;
 const DOOR_THICKNESS = 0.05;
@@ -31,7 +31,7 @@ export default function Door({
   const doorRef = useRef<Mesh>(null!);
   const isOpen = useRef(false);
   const camera = useThree((state) => state.camera);
-  const textures = getDoorTextures();
+  const textures = getTextures();
 
   useEffect(() => {
     const onClick = () => {

@@ -25,25 +25,34 @@ const LAYOUT: RoomLayout[] = [
     room: "hallway",
     skip: ["left", "right", "near"],
     extraWalls: [
-      { pos: [-1.55, 25], size: [1.9, 0.2] },
-      { pos: [1.55, 25], size: [1.9, 0.2] },
+      // entrance wall, split around the front door
+      { pos: [-1.975, 11], size: [1.05, 0.2] },
+      { pos: [0.275, 11], size: [1.05, 0.2] },
+      // left wall, split around the bedroom and bathroom doors
       { pos: [-2.5, -3.75], size: [0.2, 8.5] },
-      { pos: [-2.5, 11.5], size: [0.2, 20] },
-      { pos: [-2.5, 23.75], size: [0.2, 2.5] },
-      { pos: [2.5, 7.75], size: [0.2, 7.5] },
-      { pos: [2.5, 18.75], size: [0.2, 12.5] },
+      { pos: [-2.5, 5.25], size: [0.2, 7.5] },
+      { pos: [-2.5, 10.5], size: [0.2, 1] },
+      // right wall, split around the closet door
+      { pos: [0.8, 5.5], size: [0.2, 3] },
+      { pos: [0.8, 9.5], size: [0.2, 3] },
     ],
-    doors: [{ hinge: [-0.6, 25], width: 1.2, rotation: 0, swing: 1 }],
+    doors: [{ hinge: [-1.45, 11], width: 1.2, rotation: 0, swing: 1 }],
   },
   {
     room: "bathroom",
-    skip: ["right"],
-    doors: [{ hinge: [-2.5, 22.5], width: 1, rotation: Math.PI / 2, swing: 1 }],
+    skip: ["right", "far"],
+    extraWalls: [
+      // right wall where it sticks out past the end of the hallway
+      { pos: [-2.5, 11.75], size: [0.2, 1.5] },
+      // far wall, minus the part the bedroom wall already covers
+      { pos: [-3.25, 7.5], size: [1.5, 0.2] },
+    ],
+    doors: [{ hinge: [-2.5, 10], width: 1, rotation: Math.PI / 2, swing: 1 }],
   },
   {
     room: "closet",
     skip: ["left"],
-    doors: [{ hinge: [2.5, 11.5], width: 1, rotation: -Math.PI / 2, swing: 1 }],
+    doors: [{ hinge: [0.8, 7], width: 1, rotation: -Math.PI / 2, swing: 1 }],
   },
   {
     room: "bedroom",
@@ -64,12 +73,12 @@ const LAYOUT: RoomLayout[] = [
   {
     room: "livingroom",
     skip: ["left", "far"],
-    extraWalls: [{ pos: [10.5, -4], size: [4, 0.2] }],
+    extraWalls: [{ pos: [8.8, -4], size: [4, 0.2] }],
   },
   {
     room: "kitchen",
     skip: ["left", "near"],
-    extraWalls: [{ pos: [2.5, -9], size: [0.2, 2] }],
+    extraWalls: [{ pos: [0.8, -9], size: [0.2, 2] }],
   },
 ];
 
@@ -128,7 +137,7 @@ export default function Home() {
 
   return (
     <KeyboardControls map={map}>
-      <Canvas camera={{ position: [0, 1.7, 8], fov: 75 }}>
+      <Canvas camera={{ position: [-0.85, 1.7, 8], fov: 75 }}>
         <Scene />
       </Canvas>
     </KeyboardControls>

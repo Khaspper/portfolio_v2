@@ -1,4 +1,4 @@
-import { CanvasTexture, SRGBColorSpace } from "three";
+import { CanvasTexture, RepeatWrapping, SRGBColorSpace } from "three";
 
 // Ported from the hallway prototype: textures drawn in code on a canvas
 
@@ -119,14 +119,81 @@ function drawFrameWood(g: CanvasRenderingContext2D, w: number, h: number) {
   mottle(g, w, h, r, 40, "10,6,3", "110,90,70", 0.2);
 }
 
-// Made once on first use, then shared by every door
-let cached: { door: CanvasTexture; frame: CanvasTexture } | null = null;
-export function getDoorTextures() {
+// Basket-weave parquet: squares of 4 planks, alternating direction
+function drawParquet(g: CanvasRenderingContext2D, w: number, h: number) {
+  const r = seededRandom(21);
+  g.fillStyle = "#1e150e";
+  g.fillRect(0, 0, w, h);
+  const cell = 64;
+  const slats = 4;
+  const sw = cell / slats;
+  for (let cy = 0; cy < h / cell; cy++) {
+    for (let cx = 0; cx < w / cell; cx++) {
+      const vertical = (cx + cy) % 2 === 0;
+      for (let s = 0; s < slats; s++) {
+        // each plank a slightly different brown
+        const base = 52 + r() * 26;
+        g.fillStyle = `rgb(${Math.round(base)},${Math.round(base * 0.72)},${Math.round(base * 0.5)})`;
+        let x, y, pw, ph;
+        if (vertical) {
+          x = cx * cell + s * sw;
+          y = cy * cell;
+          pw = sw - 1;
+          ph = cell - 1;
+        } else {
+          x = cx * cell;
+          y = cy * cell + s * sw;
+          pw = cell - 1;
+          ph = sw - 1;
+        }
+        g.fillRect(x, y, pw, ph);
+
+        // grain lines along the plank
+        g.strokeStyle = "rgba(20,12,6,0.25)";
+        g.lineWidth = 1;
+        for (let k = 0; k < 3; k++) {
+          g.beginPath();
+          if (vertical) {
+            const gx = x + 2 + r() * (pw - 4);
+            g.moveTo(gx, y);
+            g.lineTo(gx + (r() - 0.5) * 2, y + ph);
+          } else {
+            const gy = y + 2 + r() * (ph - 4);
+            g.moveTo(x, gy);
+            g.lineTo(x + pw, gy + (r() - 0.5) * 2);
+          }
+          g.stroke();
+        }
+      }
+    }
+  }
+  mottle(g, w, h, r, 120, "10,6,3", "120,96,70", 0.25);
+  speckle(g, w, h, r, 6000, 0.12);
+}
+
+// Made once on first use, then shared by everything that uses them
+let cached: {
+  door: CanvasTexture;
+  frame: CanvasTexture;
+  parquet: CanvasTexture;
+} | null = null;
+export function getTextures() {
   if (!cached) {
     cached = {
       door: canvasTexture(256, 512, drawDoor),
       frame: canvasTexture(256, 256, drawFrameWood),
+      parquet: canvasTexture(512, 512, drawParquet),
     };
   }
   return cached;
+}
+
+// The parquet texture repeated across a floor of this size (one copy per unit)
+export function makeParquetFloor(width: number, depth: number) {
+  const texture = getTextures().parquet.clone();
+  texture.wrapS = RepeatWrapping;
+  texture.wrapT = RepeatWrapping;
+  texture.repeat.set(width, depth);
+  texture.needsUpdate = true;
+  return texture;
 }

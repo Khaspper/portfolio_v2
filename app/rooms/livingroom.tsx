@@ -46,7 +46,7 @@ export default function LivingRoom() {
       rotation={[Math.PI / 2, 0, 0]}
     >
       <planeGeometry args={[livingRoomWidth, livingRoomHeight]} />
-      <meshStandardMaterial color={""} side={2} />
+      <meshStandardMaterial color={"yellow"} side={2} />
     </mesh>
   );
 }

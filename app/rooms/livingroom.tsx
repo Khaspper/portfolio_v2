@@ -13,7 +13,7 @@ export default function LivingRoom() {
     livingRoomHeight,
   } = useControls({
     livingRoomPosX: {
-      value: 20,
+      value: 15,
       min: -10,
       max: 20,
     },
@@ -28,7 +28,7 @@ export default function LivingRoom() {
       max: 20,
     },
     livingRoomWidth: {
-      value: 30,
+      value: 20,
       min: 0,
       max: 100,
     },

@@ -7,6 +7,7 @@ import { DirectionalLight, DirectionalLightHelper } from "three";
 import { useControls } from "leva";
 import Hallway from "./rooms/hallway";
 import Bathroom from "./rooms/bathroom";
+import Bedroom from "./rooms/bedroom";
 
 function Scene() {
   const directionLightRef = useRef<DirectionalLight>(null!);
@@ -49,6 +50,7 @@ function Scene() {
       <ambientLight intensity={0.1} />
       <Hallway />
       <Bathroom />
+      <Bedroom />
     </>
   );
 }

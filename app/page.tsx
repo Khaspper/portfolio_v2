@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { ComponentProps, Fragment, useMemo, useRef } from "react";
 import {
   KeyboardControls,
   PointerLockControls,
@@ -14,6 +14,42 @@ import Rooms from "./rooms";
 import Player from "./Player";
 import RoomWalls, { Wall } from "./roomWalls";
 import { Controls } from "./types";
+
+type RoomLayout = {
+  room: ComponentProps<typeof Rooms>["room"];
+  // which walls to leave open
+  skip?: ComponentProps<typeof RoomWalls>["skip"];
+  // one off walls
+  extraWalls?: ComponentProps<typeof Wall>[];
+};
+
+const LAYOUT: RoomLayout[] = [
+  {
+    room: "hallway",
+    skip: ["right"],
+    extraWalls: [{ pos: [2.5, 14.5], size: [0.2, 21] }],
+  },
+  { room: "bathroom" },
+  { room: "closet", skip: ["left"] },
+  {
+    room: "bedroom",
+    skip: ["right"],
+    extraWalls: [{ pos: [-4, 5], size: [0.2, 5] }],
+  },
+  { room: "bedroomEntry", skip: ["left", "right"] },
+  { room: "walkInCloset", skip: ["far"] },
+  {
+    room: "livingroom",
+    skip: ["left", "far"],
+    extraWalls: [{ pos: [10.5, -4], size: [4, 0.2] }],
+  },
+  {
+    room: "kitchen",
+    skip: ["left", "near"],
+    extraWalls: [{ pos: [2.5, -9], size: [0.2, 2] }],
+  },
+];
+
 function Scene() {
   const directionLightRef = useRef<DirectionalLight>(null!);
 
@@ -54,26 +90,15 @@ function Scene() {
       />
       <ambientLight intensity={0.1} />
       <Player />
-      <Rooms room="hallway" />
-      <RoomWalls room="hallway" skip={["right"]} />
-      <Wall pos={[2.5, 14.5]} size={[0.2, 21]} />
-      <Rooms room="bathroom" />
-      <RoomWalls room="bathroom" />
-      <Rooms room="closet" />
-      <RoomWalls room="closet" skip={["left"]} />
-      <Rooms room="bedroom" />
-      <RoomWalls room="bedroom" skip={["right"]} />
-      <Wall pos={[-4, 5]} size={[0.2, 5]} />
-      <Rooms room="bedroomEntry" />
-      <RoomWalls room="bedroomEntry" skip={["left", "right"]} />
-      <Rooms room="walkInCloset" />
-      <RoomWalls room="walkInCloset" skip={["far"]} />
-      <Rooms room="livingroom" />
-      <RoomWalls room="livingroom" skip={["left", "far"]} />
-      <Wall pos={[10.5, -4]} size={[4, 0.2]} />
-      <Rooms room="kitchen" />
-      <RoomWalls room="kitchen" skip={["left", "near"]} />
-      <Wall pos={[2.5, -9]} size={[0.2, 2]} />
+      {LAYOUT.map(({ room, skip, extraWalls = [] }) => (
+        <Fragment key={room}>
+          <Rooms room={room} />
+          <RoomWalls room={room} skip={skip} />
+          {extraWalls.map((wall, i) => (
+            <Wall key={i} {...wall} />
+          ))}
+        </Fragment>
+      ))}
     </>
   );
 }

@@ -10,6 +10,7 @@ import Bathroom from "./rooms/bathroom";
 import Bedroom from "./rooms/bedroom";
 import Closet from "./rooms/closet";
 import LivingRoom from "./rooms/livingroom";
+import Kitchen from "./rooms/kitchen";
 
 function Scene() {
   const directionLightRef = useRef<DirectionalLight>(null!);
@@ -55,6 +56,7 @@ function Scene() {
       <Bedroom />
       <Closet />
       <LivingRoom />
+      <Kitchen />
     </>
   );
 }

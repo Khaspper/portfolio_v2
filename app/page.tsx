@@ -1,19 +1,14 @@
 "use client";
 
-import { ComponentProps, Fragment, useMemo, useRef } from "react";
-import {
-  KeyboardControls,
-  PointerLockControls,
-  useHelper,
-} from "@react-three/drei";
+import { ComponentProps, Fragment, useMemo } from "react";
+import { KeyboardControls, PointerLockControls } from "@react-three/drei";
 
 import { Canvas } from "@react-three/fiber";
-import { DirectionalLight, DirectionalLightHelper } from "three";
-import { useControls } from "leva";
 import Rooms from "./rooms";
 import Player from "./Player";
 import RoomWalls, { Wall } from "./roomWalls";
 import Door from "./door";
+import Lights from "./lights";
 import { Controls } from "./types";
 
 type RoomLayout = {
@@ -79,44 +74,10 @@ const LAYOUT: RoomLayout[] = [
 ];
 
 function Scene() {
-  const directionLightRef = useRef<DirectionalLight>(null!);
-
-  const { lightColor, lightIntensity, lightX, lightY, lightZ } = useControls({
-    lightColor: "white",
-    lightIntensity: {
-      value: 0.5,
-      min: 0,
-      max: 5,
-    },
-    lightX: {
-      value: 0,
-      min: 0,
-      max: 50,
-    },
-    lightY: {
-      value: 0,
-      min: 10000,
-      max: 10000,
-    },
-    lightZ: {
-      value: 5,
-      min: 0,
-      max: 50,
-    },
-  });
-
-  useHelper(directionLightRef, DirectionalLightHelper, 0.5, "white");
-
   return (
     <>
       <PointerLockControls />
-      <directionalLight
-        ref={directionLightRef}
-        position={[lightX, lightY, lightZ]}
-        intensity={lightIntensity}
-        color={lightColor}
-      />
-      <ambientLight intensity={0.1} />
+      <Lights />
       <Player />
       {LAYOUT.map(({ room, skip, extraWalls = [], doors = [] }) => (
         <Fragment key={room}>

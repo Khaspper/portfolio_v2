@@ -2,12 +2,12 @@ import { useControls } from "leva";
 import { useRef } from "react";
 import { Mesh } from "three";
 
-const ROOMS = {
+export const ROOMS = {
   hallway: {
     posX: { value: 0, min: -10, max: 10 },
     posY: { value: 0, min: -10, max: 10 },
     posZ: { value: 8.5, min: -10, max: 10 },
-    width: { value: 10, min: 0, max: 100 },
+    width: { value: 6.5, min: 0, max: 100 },
     height: { value: 33, min: 0, max: 100 },
     color: "orange",
   },

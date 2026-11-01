@@ -1,8 +1,8 @@
 import { useControls } from "leva";
-import { Grid } from "@react-three/drei";
 import { useMemo, useRef } from "react";
 import { Mesh } from "three";
-import { makeParquetFloor } from "./textures";
+import { WALL_HEIGHT } from "./roomWalls";
+import { makeCeiling, makeParquetFloor } from "./textures";
 
 export const ROOMS = {
   hallway: {
@@ -119,6 +119,12 @@ export default function Rooms({ room }: { room: RoomName }) {
     [room, roomWidth, roomHeight],
   );
 
+  // stained ceiling everywhere except the bedroom rooms
+  const ceilingTexture = useMemo(
+    () => (BEDROOM_ROOMS.includes(room) ? null : makeCeiling(roomWidth, roomHeight)),
+    [room, roomWidth, roomHeight],
+  );
+
   return (
     <>
       <mesh
@@ -133,15 +139,15 @@ export default function Rooms({ room }: { room: RoomName }) {
           <meshStandardMaterial color={ROOMS[room].color} side={2} />
         )}
       </mesh>
-      <Grid
-        position={[roomPosX, roomPosY + 0.01, roomPosZ]}
-        args={[roomWidth, roomHeight]}
-        cellSize={1}
-        sectionSize={5}
-        cellColor="black"
-        sectionColor="black"
-        fadeDistance={100}
-      />
+      {ceilingTexture && (
+        <mesh
+          position={[roomPosX, roomPosY + WALL_HEIGHT, roomPosZ]}
+          rotation={[Math.PI / 2, 0, 0]}
+        >
+          <planeGeometry args={[roomWidth, roomHeight]} />
+          <meshStandardMaterial map={ceilingTexture} roughness={1} />
+        </mesh>
+      )}
     </>
   );
 }

@@ -1,8 +1,8 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
-import { Group, MathUtils, Mesh, Raycaster, Vector2 } from "three";
+import { Group, MathUtils, Matrix4, Mesh, Raycaster, Vector2 } from "three";
 import { WALL_HEIGHT } from "./roomWalls";
-import { getTextures, makeWallpaper } from "./textures";
+import { getTextures, makeWallpaperBox } from "./textures";
 
 const DOOR_HEIGHT = 2.1;
 const DOOR_THICKNESS = 0.05;
@@ -12,6 +12,10 @@ const SWING_SPEED = 4;
 const FRAME_SIZE = 0.08; // how thick the wooden frame is
 const FRAME_DEPTH = 0.26; // a bit deeper than the wall so it sticks out on both sides
 const KNOB_RADIUS = 0.03;
+// how far the frame pokes into the doorway, so it covers the wall's cut edge
+// instead of sitting exactly on it (that caused flickering)
+const FRAME_INSET = 0.01;
+const LEAF_WIDTH_GAP = FRAME_INSET * 2; // the door itself is this much narrower than the gap
 
 const raycaster = new Raycaster();
 const SCREEN_CENTER = new Vector2(0, 0);
@@ -27,23 +31,27 @@ export default function Door({
   width: number;
   rotation: number;
   swing?: 1 | -1;
-  // plain gray wall above the door instead of wallpaper (used for the bedroom):
-  // "both" sides, or only the "inside" (the side the door swings into)
-  plainWall?: "both" | "inside";
+  // plain gray wall above the door instead of wallpaper (used inside the bedroom)
+  plainWall?: boolean;
 }) {
-  const hingeRef = useRef<Group>(null!);
+  const pivotRef = useRef<Group>(null!);
   const doorRef = useRef<Mesh>(null!);
   const isOpen = useRef(false);
   const camera = useThree((state) => state.camera);
   const textures = getTextures();
-  const lintelWallpaper = useMemo(
+  // wall piece above the door, wallpaper lined up with the walls around it
+  const lintelGeometry = useMemo(
     () =>
-      plainWall === "both" ? null : makeWallpaper(width, WALL_HEIGHT - DOOR_HEIGHT),
-    [plainWall, width],
+      makeWallpaperBox(
+        [width, WALL_HEIGHT - DOOR_HEIGHT, 0.2],
+        new Matrix4()
+          .makeTranslation(hinge[0], 0, hinge[1])
+          .multiply(new Matrix4().makeRotationY(rotation))
+          .multiply(new Matrix4().makeTranslation(width / 2, (DOOR_HEIGHT + WALL_HEIGHT) / 2, 0)),
+      ),
+    [hinge, rotation, width],
   );
-  // A box has 6 faces: 0 +x, 1 -x, 2 top, 3 bottom, 4 front (+z), 5 back (-z).
-  // swing 1 opens toward the back face, swing -1 toward the front face
-  const insideFace = swing === 1 ? 5 : 4;
+  useEffect(() => () => lintelGeometry.dispose(), [lintelGeometry]);
 
   useEffect(() => {
     const onClick = () => {
@@ -58,11 +66,16 @@ export default function Door({
     return () => window.removeEventListener("click", onClick);
   }, [camera]);
 
+  // The door turns around its back corner on the side it opens toward,
+  // just inside the frame, so it never swings through the frame
+  const leafWidth = width - LEAF_WIDTH_GAP;
+  const pivotZ = (-swing * DOOR_THICKNESS) / 2;
+
   // Ease the door toward open/closed every frame
   useFrame((_, delta) => {
-    const target = rotation + (isOpen.current ? swing * OPEN_ANGLE : 0);
-    hingeRef.current.rotation.y = MathUtils.damp(
-      hingeRef.current.rotation.y,
+    const target = isOpen.current ? swing * OPEN_ANGLE : 0;
+    pivotRef.current.rotation.y = MathUtils.damp(
+      pivotRef.current.rotation.y,
       target,
       SWING_SPEED,
       delta,
@@ -70,21 +83,23 @@ export default function Door({
   });
 
   return (
-    <>
-      <group
-        ref={hingeRef}
-        position={[hinge[0], 0, hinge[1]]}
-        rotation={[0, rotation, 0]}
-      >
-        <mesh ref={doorRef} userData={{ solid: true }} position={[width / 2, DOOR_HEIGHT / 2, 0]}>
-          <boxGeometry args={[width, DOOR_HEIGHT, DOOR_THICKNESS]} />
+    // Everything is placed relative to the hinge, turned to line up with the wall
+    <group position={[hinge[0], 0, hinge[1]]} rotation={[0, rotation, 0]}>
+      {/* the door */}
+      <group ref={pivotRef} position={[FRAME_INSET, 0, pivotZ]}>
+        <mesh
+          ref={doorRef}
+          userData={{ solid: true }}
+          position={[leafWidth / 2, (DOOR_HEIGHT - FRAME_INSET) / 2, -pivotZ]}
+        >
+          <boxGeometry args={[leafWidth, DOOR_HEIGHT - FRAME_INSET, DOOR_THICKNESS]} />
           <meshStandardMaterial map={textures.door} roughness={0.8} />
 
           {/* brass knobs on both sides, near the edge away from the hinge */}
           {[1, -1].map((side) => (
             <mesh
               key={side}
-              position={[width / 2 - 0.09, -0.05, side * (DOOR_THICKNESS / 2 + KNOB_RADIUS)]}
+              position={[leafWidth / 2 - 0.09, -0.05, side * (DOOR_THICKNESS / 2 + KNOB_RADIUS)]}
             >
               <sphereGeometry args={[KNOB_RADIUS, 12, 8]} />
               <meshStandardMaterial color="#8a6d3b" roughness={0.45} metalness={0.6} />
@@ -93,37 +108,40 @@ export default function Door({
         </mesh>
       </group>
 
-      {/* wooden frame around the doorway: two sides and a top */}
-      <group position={[hinge[0], 0, hinge[1]]} rotation={[0, rotation, 0]}>
-        {[-FRAME_SIZE / 2, width + FRAME_SIZE / 2].map((x) => (
-          <mesh key={x} position={[x, (DOOR_HEIGHT + FRAME_SIZE) / 2, 0]}>
-            <boxGeometry args={[FRAME_SIZE, DOOR_HEIGHT + FRAME_SIZE, FRAME_DEPTH]} />
-            <meshStandardMaterial map={textures.frame} roughness={0.85} />
-          </mesh>
-        ))}
-        <mesh position={[width / 2, DOOR_HEIGHT + FRAME_SIZE / 2, 0]}>
-          <boxGeometry args={[width + FRAME_SIZE * 2, FRAME_SIZE, FRAME_DEPTH]} />
+      {/* wooden frame: two sides up to the top piece, then the top piece across */}
+      {[FRAME_INSET - FRAME_SIZE / 2, width - FRAME_INSET + FRAME_SIZE / 2].map((x) => (
+        <mesh key={x} position={[x, (DOOR_HEIGHT - FRAME_INSET) / 2, 0]}>
+          <boxGeometry args={[FRAME_SIZE, DOOR_HEIGHT - FRAME_INSET, FRAME_DEPTH]} />
           <meshStandardMaterial map={textures.frame} roughness={0.85} />
         </mesh>
-      </group>
+      ))}
+      <mesh position={[width / 2, DOOR_HEIGHT - FRAME_INSET + FRAME_SIZE / 2, 0]}>
+        <boxGeometry
+          args={[width + (FRAME_SIZE - FRAME_INSET) * 2, FRAME_SIZE, FRAME_DEPTH]}
+        />
+        <meshStandardMaterial map={textures.frame} roughness={0.85} />
+      </mesh>
 
-      <group position={[hinge[0], 0, hinge[1]]} rotation={[0, rotation, 0]}>
-        <mesh userData={{ solid: true }} position={[width / 2, (DOOR_HEIGHT + WALL_HEIGHT) / 2, 0]}>
-          <boxGeometry args={[width, WALL_HEIGHT - DOOR_HEIGHT, 0.2]} />
-          {[0, 1, 2, 3, 4, 5].map((face) =>
-            !lintelWallpaper || (plainWall === "inside" && face === insideFace) ? (
-              <meshStandardMaterial key={face} attach={`material-${face}`} color="lightgray" />
-            ) : (
-              <meshStandardMaterial
-                key={face}
-                attach={`material-${face}`}
-                map={lintelWallpaper}
-                roughness={0.95}
-              />
-            ),
-          )}
+      {/* crown molding across the top, matching the walls */}
+      {!plainWall && (
+        <mesh position={[width / 2, WALL_HEIGHT - 0.03, 0]}>
+          <boxGeometry args={[width, 0.06, 0.3]} />
+          <meshStandardMaterial map={textures.frame} roughness={0.85} />
         </mesh>
-      </group>
-    </>
+      )}
+
+      {/* wall piece above the door */}
+      <mesh
+        userData={{ solid: true }}
+        position={[width / 2, (DOOR_HEIGHT + WALL_HEIGHT) / 2, 0]}
+        geometry={lintelGeometry}
+      >
+        {plainWall ? (
+          <meshStandardMaterial color="lightgray" />
+        ) : (
+          <meshStandardMaterial map={textures.wallpaper} roughness={0.95} />
+        )}
+      </mesh>
+    </group>
   );
 }

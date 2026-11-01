@@ -4,11 +4,14 @@ import { ComponentProps, Fragment, useMemo } from "react";
 import { KeyboardControls, PointerLockControls } from "@react-three/drei";
 
 import { Canvas } from "@react-three/fiber";
+import { Leva } from "leva";
 import Rooms, { BEDROOM_ROOMS } from "./rooms";
-import Player from "./Player";
+import Player, { PLAYER_HEIGHT } from "./Player";
 import RoomWalls, { Wall } from "./roomWalls";
 import Door from "./door";
 import Lights from "./lights";
+import Decor from "./decor";
+import Filter from "./filter";
 import { Controls } from "./types";
 
 type RoomLayout = {
@@ -30,8 +33,8 @@ const LAYOUT: RoomLayout[] = [
       { pos: [0.275, 11], size: [1.05, 0.2] },
       // left wall, split around the bedroom and bathroom doors
       { pos: [-2.5, -3.75], size: [0.2, 8.5] },
-      { pos: [-2.5, 5.25], size: [0.2, 7.5] },
-      { pos: [-2.5, 10.5], size: [0.2, 1] },
+      { pos: [-2.5, 4.6], size: [0.2, 6.2] },
+      { pos: [-2.5, 9.85], size: [0.2, 2.3] },
       // right wall, split around the closet door
       { pos: [0.8, 5.5], size: [0.2, 3] },
       { pos: [0.8, 9.5], size: [0.2, 3] },
@@ -46,8 +49,11 @@ const LAYOUT: RoomLayout[] = [
       { pos: [-2.5, 11.75], size: [0.2, 1.5] },
       // far wall, minus the part the bedroom wall already covers
       { pos: [-3.25, 7.5], size: [1.5, 0.2] },
+      // thin wallpapered panel across the whole back wall on the bathroom side
+      // (covers the bedroom's plain wall without a step where the pieces meet)
+      { pos: [-4, 7.61], size: [3, 0.02] },
     ],
-    doors: [{ hinge: [-2.5, 10], width: 1, rotation: Math.PI / 2, swing: 1 }],
+    doors: [{ hinge: [-2.5, 7.7], width: 1, rotation: -Math.PI / 2, swing: -1 }],
   },
   {
     room: "closet",
@@ -87,6 +93,8 @@ function Scene() {
     <>
       <PointerLockControls />
       <Lights />
+      <Decor />
+      <Filter />
       <Player />
       {LAYOUT.map(({ room, skip, extraWalls = [], doors = [] }) => (
         <Fragment key={room}>
@@ -99,14 +107,9 @@ function Scene() {
             <Door
               key={i}
               {...door}
-              // bedroom entry door faces the hallway, so only its bedroom side stays plain
-              plainWall={
-                room === "bedroomEntry"
-                  ? "inside"
-                  : BEDROOM_ROOMS.includes(room)
-                    ? "both"
-                    : undefined
-              }
+              // the bedroom entry door sits in the wallpapered hallway wall,
+              // only doors inside the bedroom stay plain
+              plainWall={BEDROOM_ROOMS.includes(room) && room !== "bedroomEntry"}
             />
           ))}
         </Fragment>
@@ -148,7 +151,15 @@ export default function Home() {
 
   return (
     <KeyboardControls map={map}>
-      <Canvas camera={{ position: [-0.85, 1.7, 8], fov: 75 }}>
+      {/* settings panel is hidden; change to hidden={false} to bring the sliders back */}
+      <Leva hidden />
+      {/* flat + linear + legacy: no tone mapping or color conversion, like the prototype */}
+      <Canvas
+        flat
+        linear
+        legacy
+        camera={{ position: [-0.85, PLAYER_HEIGHT, 8], fov: 68, near: 0.05, far: 40 }}
+      >
         <Scene />
       </Canvas>
     </KeyboardControls>

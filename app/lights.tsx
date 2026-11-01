@@ -1,7 +1,7 @@
 import { useFrame } from "@react-three/fiber";
 import { useControls } from "leva";
 import { useRef } from "react";
-import { MeshBasicMaterial, PointLight } from "three";
+import { MeshBasicMaterial, PointLight, ShaderChunk } from "three";
 import { WALL_HEIGHT } from "./roomWalls";
 
 const BULB_HEIGHT = WALL_HEIGHT - 0.5; // how far down the bulb hangs
@@ -19,12 +19,34 @@ const ROOM_BULBS: [number, number][] = [
   [3.8, -7], // kitchen
 ];
 
+// How much the screen should glitch right now. Flickering bulbs push it up,
+// the filter reads it every frame and resets it
+export const glitch = { target: 0 };
+
+// The prototype used an older three.js where a light fades out evenly until its
+// "distance", instead of the realistic falloff three.js uses now (which gets dark fast).
+// Swap that old formula back in for every material.
+ShaderChunk.lights_pars_begin = ShaderChunk.lights_pars_begin.replace(
+  /float getDistanceAttenuation\([\s\S]*?\n}\n/,
+  `float getDistanceAttenuation( const in float lightDistance, const in float cutoffDistance, const in float decayExponent ) {
+	if ( cutoffDistance > 0.0 && decayExponent > 0.0 ) {
+		return pow( saturate( -lightDistance / cutoffDistance + 1.0 ), decayExponent );
+	}
+	return 1.0;
+}
+`,
+);
+
+// The old three.js also made every light PI times brighter, so the prototype's
+// numbers are multiplied by PI here to look the same
+const OLD = Math.PI;
+
 export default function Lights() {
   const { ambient, hallwayBulb, roomBulb, fog } = useControls("lighting", {
-    ambient: { value: 1, min: 0, max: 5 },
-    hallwayBulb: { value: 8, min: 0, max: 40 },
-    roomBulb: { value: 3, min: 0, max: 40 },
-    fog: { value: 0.08, min: 0, max: 0.3 },
+    ambient: { value: 0.32 * OLD, min: 0, max: 5 },
+    hallwayBulb: { value: 2.4 * OLD, min: 0, max: 30 },
+    roomBulb: { value: 1.15 * OLD, min: 0, max: 30 },
+    fog: { value: 0.115, min: 0, max: 0.3 },
   });
 
   return (
@@ -33,11 +55,27 @@ export default function Lights() {
       <fogExp2 attach="fog" args={["#0a0806", fog]} />
       <ambientLight color="#3d352c" intensity={ambient} />
 
+      {/* soft fill by the front door so the entrance isn't pitch black */}
+      <pointLight
+        position={[-0.85, 1.9, 10.6]}
+        color="#6e6254"
+        intensity={0.35 * OLD}
+        distance={6}
+        decay={2}
+      />
+
       {HALLWAY_BULBS.map((pos) => (
-        <Bulb key={pos.join()} pos={pos} intensity={hallwayBulb} flicker />
+        <Bulb
+          key={pos.join()}
+          pos={pos}
+          intensity={hallwayBulb}
+          distance={10}
+          decay={1.7}
+          flicker
+        />
       ))}
       {ROOM_BULBS.map((pos) => (
-        <Bulb key={pos.join()} pos={pos} intensity={roomBulb} />
+        <Bulb key={pos.join()} pos={pos} intensity={roomBulb} distance={7} decay={1.8} />
       ))}
     </>
   );
@@ -46,10 +84,14 @@ export default function Lights() {
 function Bulb({
   pos,
   intensity,
+  distance,
+  decay,
   flicker = false,
 }: {
   pos: [number, number];
   intensity: number;
+  distance: number; // light fades to nothing at this distance
+  decay: number; // how quickly it fades on the way there
   flicker?: boolean;
 }) {
   const lightRef = useRef<PointLight>(null!);
@@ -95,6 +137,11 @@ function Bulb({
     }
 
     s.level += (s.target - s.level) * Math.min(1, delta * 22);
+
+    // while a hallway bulb stutters, the screen glitches more the darker it gets
+    if (flicker && t < s.eventEnd) {
+      glitch.target = Math.max(glitch.target, 0.35 * (1 - s.level));
+    }
     lightRef.current.intensity = intensity * s.level;
     glassRef.current.color.setRGB(
       1.0 * s.level + 0.08,
@@ -109,8 +156,8 @@ function Bulb({
         ref={lightRef}
         position={[0, BULB_HEIGHT, 0]}
         color="#ffbf80"
-        distance={14}
-        decay={2}
+        distance={distance}
+        decay={decay}
       />
       {/* bulb */}
       <mesh position={[0, BULB_HEIGHT, 0]}>

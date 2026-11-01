@@ -1,4 +1,12 @@
-import { CanvasTexture, RepeatWrapping, SRGBColorSpace } from "three";
+import {
+  BoxGeometry,
+  CanvasTexture,
+  ClampToEdgeWrapping,
+  Matrix3,
+  Matrix4,
+  RepeatWrapping,
+  Vector3,
+} from "three";
 
 // Ported from the hallway prototype: textures drawn in code on a canvas
 
@@ -21,7 +29,6 @@ function canvasTexture(
   canvas.height = height;
   draw(canvas.getContext("2d")!, width, height);
   const texture = new CanvasTexture(canvas);
-  texture.colorSpace = SRGBColorSpace;
   return texture;
 }
 
@@ -247,13 +254,139 @@ function drawWallpaper(g: CanvasRenderingContext2D, w: number, h: number) {
   speckle(g, w, h, r, 9000, 0.1);
 }
 
+// Water-stained ceiling
+function drawCeiling(g: CanvasRenderingContext2D, w: number, h: number) {
+  const r = seededRandom(29);
+  g.fillStyle = "#57534d";
+  g.fillRect(0, 0, w, h);
+  mottle(g, w, h, r, 160, "40,34,28", "110,106,100", 0.25);
+  // ring-shaped water stains
+  for (let i = 0; i < 4; i++) {
+    const x = r() * w;
+    const y = r() * h;
+    const rad = 20 + r() * 50;
+    g.strokeStyle = "rgba(70,52,30,0.25)";
+    g.lineWidth = 3;
+    g.beginPath();
+    g.arc(x, y, rad, 0, Math.PI * 2);
+    g.stroke();
+  }
+  speckle(g, w, h, r, 4000, 0.1);
+}
+
+// Worn runner rug with a border and diamond pattern
+function drawRug(g: CanvasRenderingContext2D, w: number, h: number) {
+  const r = seededRandom(5);
+  g.fillStyle = "#4e443b";
+  g.fillRect(0, 0, w, h);
+  // dark borders with a light stripe
+  g.fillStyle = "#2d2620";
+  g.fillRect(0, 0, 26, h);
+  g.fillRect(w - 26, 0, 26, h);
+  g.fillStyle = "#6b5e50";
+  g.fillRect(30, 0, 6, h);
+  g.fillRect(w - 36, 0, 6, h);
+  // small diamonds along the borders
+  for (let y = 0; y < h; y += 22) {
+    g.fillStyle = "rgba(120,104,86,0.55)";
+    for (const x of [13, w - 13]) {
+      g.beginPath();
+      g.moveTo(x, y);
+      g.lineTo(x + 6, y + 11);
+      g.lineTo(x, y + 22);
+      g.lineTo(x - 6, y + 11);
+      g.closePath();
+      g.fill();
+    }
+  }
+  // big diamonds down the middle
+  for (let y = 128; y < h; y += 256) {
+    g.save();
+    g.translate(w / 2, y);
+    g.strokeStyle = "rgba(34,28,22,0.7)";
+    g.lineWidth = 5;
+    g.beginPath();
+    g.moveTo(0, -70);
+    g.lineTo(55, 0);
+    g.lineTo(0, 70);
+    g.lineTo(-55, 0);
+    g.closePath();
+    g.stroke();
+    g.fillStyle = "rgba(110,90,70,0.5)";
+    g.beginPath();
+    g.moveTo(0, -30);
+    g.lineTo(22, 0);
+    g.lineTo(0, 30);
+    g.lineTo(-22, 0);
+    g.closePath();
+    g.fill();
+    g.restore();
+  }
+  // worn path down the middle
+  const grd = g.createLinearGradient(0, 0, w, 0);
+  grd.addColorStop(0.2, "rgba(150,135,118,0)");
+  grd.addColorStop(0.5, "rgba(150,135,118,0.18)");
+  grd.addColorStop(0.8, "rgba(150,135,118,0)");
+  g.fillStyle = grd;
+  g.fillRect(0, 0, w, h);
+  mottle(g, w, h, r, 200, "20,16,12", "140,124,104", 0.22);
+  speckle(g, w, h, r, 14000, 0.18);
+}
+
+// Front of the hallway cabinet: a drawer and two doors
+function drawCabinet(g: CanvasRenderingContext2D, w: number, h: number) {
+  const r = seededRandom(17);
+  g.fillStyle = "#4c3d2f";
+  g.fillRect(0, 0, w, h);
+  g.strokeStyle = "rgba(15,10,6,0.3)";
+  for (let i = 0; i < 40; i++) {
+    g.lineWidth = r() * 1.5;
+    const x = r() * w;
+    g.beginPath();
+    g.moveTo(x, 0);
+    g.lineTo(x + (r() - 0.5) * 6, h);
+    g.stroke();
+  }
+  g.strokeStyle = "rgba(12,8,5,0.85)";
+  g.lineWidth = 3;
+  g.strokeRect(14, 14, w - 28, 60);
+  g.strokeRect(14, 86, w - 28, h - 100);
+  g.beginPath();
+  g.moveTo(w / 2, 86);
+  g.lineTo(w / 2, h - 14);
+  g.stroke();
+  // brass handles
+  g.fillStyle = "#8a6d3b";
+  g.fillRect(w / 2 - 14, 40, 28, 6);
+  g.fillRect(w / 2 - 12, 150, 5, 22);
+  g.fillRect(w / 2 + 7, 150, 5, 22);
+  mottle(g, w, h, r, 40, "10,6,3", "130,110,90", 0.2);
+}
+
+// Soft amber light spilling out from under a door
+function drawGlow(g: CanvasRenderingContext2D, w: number, h: number) {
+  const grd = g.createLinearGradient(0, 0, w, 0);
+  grd.addColorStop(0, "rgba(255,170,90,0.9)");
+  grd.addColorStop(1, "rgba(255,170,90,0)");
+  g.fillStyle = grd;
+  g.fillRect(0, 0, w, h);
+  // fade out at the two ends
+  const fade = g.createLinearGradient(0, 0, 0, h);
+  fade.addColorStop(0, "rgba(0,0,0,1)");
+  fade.addColorStop(0.2, "rgba(0,0,0,0)");
+  fade.addColorStop(0.8, "rgba(0,0,0,0)");
+  fade.addColorStop(1, "rgba(0,0,0,1)");
+  g.globalCompositeOperation = "destination-out";
+  g.fillStyle = fade;
+  g.fillRect(0, 0, w, h);
+}
+
 // Made once on first use, then shared by everything that uses them
-let cached: {
-  door: CanvasTexture;
-  frame: CanvasTexture;
-  parquet: CanvasTexture;
-  wallpaper: CanvasTexture;
-} | null = null;
+type Textures = Record<
+  "door" | "frame" | "parquet" | "wallpaper" | "ceiling" | "rug" | "cabinet" | "glow",
+  CanvasTexture
+>;
+let cached: Textures | null = null;
 export function getTextures() {
   if (!cached) {
     cached = {
@@ -261,27 +394,80 @@ export function getTextures() {
       frame: canvasTexture(256, 256, drawFrameWood),
       parquet: canvasTexture(512, 512, drawParquet),
       wallpaper: canvasTexture(512, 512, drawWallpaper),
+      ceiling: canvasTexture(256, 256, drawCeiling),
+      rug: canvasTexture(256, 1024, drawRug),
+      cabinet: canvasTexture(256, 256, drawCabinet),
+      glow: canvasTexture(128, 64, drawGlow),
     };
+    cached.glow.wrapS = ClampToEdgeWrapping;
+    cached.glow.wrapT = ClampToEdgeWrapping;
+    cached.wallpaper.wrapS = RepeatWrapping;
+    cached.wallpaper.wrapT = RepeatWrapping;
   }
   return cached;
 }
 
-// The parquet texture repeated across a floor of this size (one copy per unit)
-export function makeParquetFloor(width: number, depth: number) {
-  const texture = getTextures().parquet.clone();
+// A copy of a texture that repeats this many times across a surface
+function repeated(name: keyof Textures, timesX: number, timesY: number) {
+  const texture = getTextures()[name].clone();
   texture.wrapS = RepeatWrapping;
   texture.wrapT = RepeatWrapping;
-  texture.repeat.set(width, depth);
+  texture.repeat.set(timesX, timesY);
   texture.needsUpdate = true;
   return texture;
 }
 
-// The wallpaper repeated across a wall of this size (one copy per 1.2 units)
-export function makeWallpaper(length: number, height: number) {
-  const texture = getTextures().wallpaper.clone();
-  texture.wrapS = RepeatWrapping;
-  texture.wrapT = RepeatWrapping;
-  texture.repeat.set(length / 1.2, height / 1.2);
-  texture.needsUpdate = true;
-  return texture;
+// Parquet across a floor of this size (one copy per unit)
+export function makeParquetFloor(width: number, depth: number) {
+  return repeated("parquet", width, depth);
+}
+
+// A wallpapered box where the pattern is pinned to the house, not to the box:
+// every face gets its texture position from where it actually is in the world.
+// So neighbouring wall pieces, ends, corner posts etc. all line up seamlessly.
+// Use it with getTextures().wallpaper.
+const WALLPAPER_TILE = 1.2; // one copy of the pattern per 1.2 units
+export function makeWallpaperBox(
+  size: [number, number, number],
+  // where the box ends up in the world (position + rotation)
+  toWorld: Matrix4,
+) {
+  const geometry = new BoxGeometry(...size);
+  const position = geometry.attributes.position;
+  const normal = geometry.attributes.normal;
+  const uv = geometry.attributes.uv;
+  const normalMatrix = new Matrix3().getNormalMatrix(toWorld);
+  const p = new Vector3();
+  const n = new Vector3();
+  for (let i = 0; i < position.count; i++) {
+    p.fromBufferAttribute(position, i).applyMatrix4(toWorld);
+    n.fromBufferAttribute(normal, i).applyMatrix3(normalMatrix).round();
+    let u: number;
+    let v: number;
+    if (n.x !== 0) {
+      // faces pointing along x: pattern runs along z (flipped so it's never mirrored)
+      u = -n.x * p.z;
+      v = p.y;
+    } else if (n.z !== 0) {
+      // faces pointing along z: pattern runs along x
+      u = n.z * p.x;
+      v = p.y;
+    } else {
+      // top and bottom
+      u = p.x;
+      v = p.z;
+    }
+    uv.setXY(i, u / WALLPAPER_TILE, v / WALLPAPER_TILE);
+  }
+  return geometry;
+}
+
+// Ceiling across a room of this size (one copy per 1.5 units)
+export function makeCeiling(width: number, depth: number) {
+  return repeated("ceiling", width / 1.5, depth / 1.5);
+}
+
+// Rug of this length (pattern repeats every 3.6 units)
+export function makeRug(length: number) {
+  return repeated("rug", 1, length / 3.6);
 }

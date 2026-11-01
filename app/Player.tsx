@@ -12,7 +12,7 @@ const right = new Vector3();
 const UP = new Vector3(0, 1, 0);
 
 const PLAYER_RADIUS = 0.3; // how close you can get to a wall
-const PLAYER_HEIGHT = 1.7; // camera height above your feet
+export const PLAYER_HEIGHT = 1.5; // camera height above your feet (eye level)
 const move = new Vector3();
 const solidBoxes: Box3[] = [];
 
@@ -71,7 +71,8 @@ export default function Player() {
     camera.position.z += move.z;
     if (!alreadyStuck && hitsWall(camera.position)) camera.position.z -= move.z;
     if (goUp) camera.position.y += MOVEMENT_SPEED;
-    if (goDown && camera.position.y > 2) camera.position.y -= MOVEMENT_SPEED;
+    if (goDown && camera.position.y > PLAYER_HEIGHT)
+      camera.position.y = Math.max(PLAYER_HEIGHT, camera.position.y - MOVEMENT_SPEED);
   });
   return <></>;
 }

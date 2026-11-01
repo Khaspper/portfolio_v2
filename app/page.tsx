@@ -5,13 +5,7 @@ import { OrbitControls, useHelper } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { DirectionalLight, DirectionalLightHelper } from "three";
 import { useControls } from "leva";
-import Hallway from "./rooms/hallway";
-import Bathroom from "./rooms/bathroom";
-import Bedroom from "./rooms/bedroom";
-import Closet from "./rooms/closet";
-import LivingRoom from "./rooms/livingroom";
-import Kitchen from "./rooms/kitchen";
-
+import Rooms from "./rooms";
 function Scene() {
   const directionLightRef = useRef<DirectionalLight>(null!);
 
@@ -51,12 +45,12 @@ function Scene() {
         color={lightColor}
       />
       <ambientLight intensity={0.1} />
-      <Hallway />
-      <Bathroom />
-      <Bedroom />
-      <Closet />
-      <LivingRoom />
-      <Kitchen />
+      <Rooms room="hallway" />
+      <Rooms room="bathroom" />
+      <Rooms room="closet" />
+      <Rooms room="bedroom" />
+      <Rooms room="livingroom" />
+      <Rooms room="kitchen" />
     </>
   );
 }

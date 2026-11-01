@@ -32,8 +32,8 @@ const LAYOUT: RoomLayout[] = [
     extraWalls: [
       { pos: [-1.55, 25], size: [1.9, 0.2] },
       { pos: [1.55, 25], size: [1.9, 0.2] },
-      { pos: [-2.5, -3.5], size: [0.2, 9] },
-      { pos: [-2.5, 11.75], size: [0.2, 19.5] },
+      { pos: [-2.5, -3.75], size: [0.2, 8.5] },
+      { pos: [-2.5, 11.5], size: [0.2, 20] },
       { pos: [-2.5, 23.75], size: [0.2, 2.5] },
       { pos: [2.5, 7.75], size: [0.2, 7.5] },
       { pos: [2.5, 18.75], size: [0.2, 12.5] },
@@ -63,7 +63,7 @@ const LAYOUT: RoomLayout[] = [
   {
     room: "bedroomEntry",
     skip: ["left", "right"],
-    doors: [{ hinge: [-2.5, 2], width: 1, rotation: Math.PI / 2, swing: 1 }],
+    doors: [{ hinge: [-2.5, 1.5], width: 1, rotation: Math.PI / 2, swing: 1 }],
   },
   { room: "walkInCloset", skip: ["far"] },
   {

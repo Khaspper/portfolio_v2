@@ -48,7 +48,7 @@ export default function RoomWalls({
     <>
       {WALLS.filter(({ side }) => !skip.includes(side)).map(
         ({ side, pos, size }) => (
-          <mesh key={side} position={[pos[0], WALL_HEIGHT / 2, pos[1]]}>
+          <mesh key={side} userData={{ solid: true }} position={[pos[0], WALL_HEIGHT / 2, pos[1]]}>
             <boxGeometry args={[size[0], WALL_HEIGHT, size[1]]} />
             <meshStandardMaterial color="lightgray" />
           </mesh>
@@ -67,7 +67,7 @@ export function Wall({
   size: [number, number];
 }) {
   return (
-    <mesh position={[pos[0], WALL_HEIGHT / 2, pos[1]]}>
+    <mesh userData={{ solid: true }} position={[pos[0], WALL_HEIGHT / 2, pos[1]]}>
       <boxGeometry args={[size[0], WALL_HEIGHT, size[1]]} />
       <meshStandardMaterial color="lightgray" />
     </mesh>

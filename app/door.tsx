@@ -59,14 +59,14 @@ export default function Door({
         position={[hinge[0], 0, hinge[1]]}
         rotation={[0, rotation, 0]}
       >
-        <mesh ref={doorRef} position={[width / 2, DOOR_HEIGHT / 2, 0]}>
+        <mesh ref={doorRef} userData={{ solid: true }} position={[width / 2, DOOR_HEIGHT / 2, 0]}>
           <boxGeometry args={[width, DOOR_HEIGHT, DOOR_THICKNESS]} />
           <meshStandardMaterial color="saddlebrown" />
         </mesh>
       </group>
 
       <group position={[hinge[0], 0, hinge[1]]} rotation={[0, rotation, 0]}>
-        <mesh position={[width / 2, (DOOR_HEIGHT + WALL_HEIGHT) / 2, 0]}>
+        <mesh userData={{ solid: true }} position={[width / 2, (DOOR_HEIGHT + WALL_HEIGHT) / 2, 0]}>
           <boxGeometry args={[width, WALL_HEIGHT - DOOR_HEIGHT, 0.2]} />
           <meshStandardMaterial color="lightgray" />
         </mesh>

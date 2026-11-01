@@ -8,6 +8,7 @@ import { useControls } from "leva";
 import Hallway from "./rooms/hallway";
 import Bathroom from "./rooms/bathroom";
 import Bedroom from "./rooms/bedroom";
+import Closet from "./rooms/closet";
 
 function Scene() {
   const directionLightRef = useRef<DirectionalLight>(null!);
@@ -51,6 +52,7 @@ function Scene() {
       <Hallway />
       <Bathroom />
       <Bedroom />
+      <Closet />
     </>
   );
 }

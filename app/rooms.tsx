@@ -1,4 +1,5 @@
 import { useControls } from "leva";
+import { Grid } from "@react-three/drei";
 import { useRef } from "react";
 import { Mesh } from "three";
 
@@ -12,11 +13,11 @@ export const ROOMS = {
     color: "orange",
   },
   bathroom: {
-    posX: { value: -10, min: -10, max: 20 },
+    posX: { value: -6.8, min: -10, max: 20 },
     posY: { value: 0, min: -10, max: 20 },
-    posZ: { value: 17, min: -10, max: 20 },
-    width: { value: 10, min: 0, max: 100 },
-    height: { value: 16, min: 0, max: 100 },
+    posZ: { value: 19, min: -10, max: 20 },
+    width: { value: 4, min: 0, max: 100 },
+    height: { value: 12, min: 0, max: 100 },
     color: "green",
   },
   bedroom: {
@@ -90,13 +91,25 @@ export default function Rooms({ room }: { room: RoomName }) {
   );
 
   return (
-    <mesh
-      position={[roomPosX, roomPosY, roomPosZ]}
-      ref={ref}
-      rotation={[Math.PI / 2, 0, 0]}
-    >
-      <planeGeometry args={[roomWidth, roomHeight]} />
-      <meshStandardMaterial color={ROOMS[room].color} side={2} />
-    </mesh>
+    <>
+      <mesh
+        position={[roomPosX, roomPosY, roomPosZ]}
+        ref={ref}
+        rotation={[Math.PI / 2, 0, 0]}
+      >
+        <planeGeometry args={[roomWidth, roomHeight]} />
+        <meshStandardMaterial color={ROOMS[room].color} side={2} />
+      </mesh>
+      {/* grid sits a hair above the floor so it doesn't flicker */}
+      <Grid
+        position={[roomPosX, roomPosY + 0.01, roomPosZ]}
+        args={[roomWidth, roomHeight]}
+        cellSize={1} // one small square = 1 unit
+        sectionSize={5} // thicker line every 5 units
+        cellColor="black"
+        sectionColor="black"
+        fadeDistance={100}
+      />
+    </>
   );
 }

@@ -59,7 +59,8 @@ function Scene() {
       <Rooms room="bathroom" />
       <RoomWalls room="bathroom" />
       <Rooms room="closet" />
-      <RoomWalls room="closet" />
+      {/* left side is the hallway's right wall */}
+      <RoomWalls room="closet" skip={["left"]} />
       <Rooms room="bedroom" />
       <RoomWalls room="bedroom" />
       <Rooms room="livingroom" />

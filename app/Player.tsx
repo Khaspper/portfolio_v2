@@ -4,7 +4,7 @@ import { useFrame } from "@react-three/fiber";
 import { Vector3 } from "three";
 
 // const MOVEMENT_SPEED = 0.02;
-const MOVEMENT_SPEED = 0.5;
+const MOVEMENT_SPEED = 0.2;
 const forward = new Vector3();
 const right = new Vector3();
 

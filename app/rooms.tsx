@@ -29,11 +29,11 @@ export const ROOMS = {
     color: "purple",
   },
   closet: {
-    posX: { value: 10, min: -20, max: 20 },
+    posX: { value: 5, min: -20, max: 20 },
     posY: { value: 0, min: -10, max: 20 },
     posZ: { value: 12, min: -10, max: 20 },
-    width: { value: 10, min: 0, max: 100 },
-    height: { value: 6, min: 0, max: 100 },
+    width: { value: 5, min: 0, max: 100 },
+    height: { value: 3, min: 0, max: 100 },
     color: "blue",
   },
   livingroom: {

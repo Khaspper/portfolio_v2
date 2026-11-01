@@ -82,6 +82,14 @@ export default function Home() {
         name: Controls.RIGHT,
         keys: ["ArrowRight", "KeyD"],
       },
+      {
+        name: Controls.UP,
+        keys: ["Space"],
+      },
+      {
+        name: Controls.DOWN,
+        keys: ["ShiftLeft"],
+      },
     ],
     [],
   );

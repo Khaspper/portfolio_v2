@@ -3,4 +3,6 @@ export enum Controls {
   BACKWARDS = "backwards",
   LEFT = "left",
   RIGHT = "right",
+  UP = "up",
+  DOWN = "down",
 }

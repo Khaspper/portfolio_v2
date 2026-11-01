@@ -12,7 +12,7 @@ import { DirectionalLight, DirectionalLightHelper } from "three";
 import { useControls } from "leva";
 import Rooms from "./rooms";
 import Player from "./Player";
-import RoomWalls from "./roomWalls";
+import RoomWalls, { Wall } from "./roomWalls";
 import { Controls } from "./types";
 function Scene() {
   const directionLightRef = useRef<DirectionalLight>(null!);
@@ -59,15 +59,17 @@ function Scene() {
       <Rooms room="bathroom" />
       <RoomWalls room="bathroom" />
       <Rooms room="closet" />
-      {/* left side is the hallway's right wall */}
       <RoomWalls room="closet" skip={["left"]} />
       <Rooms room="bedroom" />
-      <RoomWalls room="bedroom" />
+      <RoomWalls room="bedroom" skip={["right"]} />
+      <Wall pos={[-4, 5]} size={[0.2, 5]} />
+      <Rooms room="bedroomEntry" />
+      <RoomWalls room="bedroomEntry" skip={["left", "right"]} />
+      <Rooms room="walkInCloset" />
+      <RoomWalls room="walkInCloset" skip={["far"]} />
       <Rooms room="livingroom" />
-      {/* no right wall: the living room opens straight into the kitchen */}
       <RoomWalls room="livingroom" skip={["right"]} />
       <Rooms room="kitchen" />
-      {/* no left wall: the kitchen opens straight into the living room */}
       <RoomWalls room="kitchen" skip={["left"]} />
     </>
   );

@@ -18,7 +18,7 @@ export default function Bedroom() {
         max: 20,
       },
       bedroomPosZ: {
-        value: 0.2,
+        value: 0,
         min: -10,
         max: 20,
       },
